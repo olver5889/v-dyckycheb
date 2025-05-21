@@ -209,3 +209,275 @@ gameLoop();
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title></title> <!-- Prázdný název stránky -->
+  <style>
+    body {
+      margin: 0;
+      background-color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    canvas {
+      background: #87ceeb; /* Nebe modré pozadí */
+      display: block;
+      border: 2px solid #000;
+    }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="960" height="540"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const player = {
+  x: 50,
+  y: 0,
+  width: 30,
+  height: 30,
+  color: 'red',
+  xVel: 0,
+  yVel: 0,
+  onGround: false
+};
+
+const gravity = 0.8;
+const friction = 0.8;
+const keys = {};
+
+const platforms = [
+  { x: 0, y: 510, width: 960, height: 30 },
+  { x: 150, y: 400, width: 120, height: 20 },
+  { x: 400, y: 340, width: 150, height: 20 },
+  { x: 700, y: 270, width: 120, height: 20 }
+];
+
+document.addEventListener('keydown', e => keys[e.code] = true);
+document.addEventListener('keyup', e => keys[e.code] = false);
+
+function update() {
+  // Horizontální pohyb
+  if (keys['ArrowRight']) player.xVel = 4;
+  else if (keys['ArrowLeft']) player.xVel = -4;
+  else player.xVel *= friction;
+
+  // Skok
+  if (keys['Space'] && player.onGround) {
+    player.yVel = -14;
+    player.onGround = false;
+  }
+
+  player.yVel += gravity;
+  player.x += player.xVel;
+  player.y += player.yVel;
+
+  // Kolize s plošinami
+  player.onGround = false;
+  platforms.forEach(p => {
+    if (player.x < p.x + p.width &&
+        player.x + player.width > p.x &&
+        player.y < p.y + p.height &&
+        player.y + player.height > p.y) {
+      if (player.y + player.height - player.yVel <= p.y) {
+        player.y = p.y - player.height;
+        player.yVel = 0;
+        player.onGround = true;
+      }
+    }
+  });
+
+  // Reset při pádu
+  if (player.y > canvas.height) {
+    reset();
+  }
+}
+
+function reset() {
+  player.x = 50;
+  player.y = 0;
+  player.xVel = 0;
+  player.yVel = 0;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Hráč
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  // Plošiny
+  ctx.fillStyle = 'green';
+  platforms.forEach(p => {
+    ctx.fillRect(p.x, p.y, p.width, p.height);
+  });
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
+✅ Co se změnilo:
+
+Obrazovka má nyní rozměry 960 × 540.
+
+Celý dokument je bez textu, pouze herní plocha.
+
+Přidány nové plošiny kvůli větší šířce.
+
+🎯 Chceš přidat pozadí jako v Mariovi (např. hory, mraky), obrázek hráče místo červeného čtverce nebo třeba sbíratelné mince? Stačí říct a přidám to.
+
+
+
+Řekl/a jsi:
+nechci aby tam bylo něco jineho než hrací obrazovka 
+
+ChatGPT řekl:
+Perfektní – takže chceš, aby v prohlížeči nebylo vůbec nic jiného než samotná hrací obrazovka (canvas), tedy:
+
+Žádný text
+
+Žádný okraj
+
+Žádné pozadí stránky
+
+Plná obrazovka – hra přes celý prohlížeč
+
+Tady je čistý a upravený kód:
+
+🎮 Hra v plné obrazovce bez čehokoliv jiného:
+html
+Zkopírovat
+Upravit
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: #000;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+const player = {
+  x: 50,
+  y: 0,
+  width: 40,
+  height: 40,
+  color: 'red',
+  xVel: 0,
+  yVel: 0,
+  onGround: false
+};
+
+const gravity = 0.9;
+const friction = 0.8;
+const keys = {};
+
+const platforms = [
+  { x: 0, y: window.innerHeight - 40, width: window.innerWidth, height: 40 },
+  { x: 200, y: window.innerHeight - 120, width: 120, height: 20 },
+  { x: 500, y: window.innerHeight - 200, width: 150, height: 20 },
+  { x: 800, y: window.innerHeight - 300, width: 120, height: 20 }
+];
+
+document.addEventListener('keydown', e => keys[e.code] = true);
+document.addEventListener('keyup', e => keys[e.code] = false);
+
+function update() {
+  if (keys['ArrowRight']) player.xVel = 5;
+  else if (keys['ArrowLeft']) player.xVel = -5;
+  else player.xVel *= friction;
+
+  if (keys['Space'] && player.onGround) {
+    player.yVel = -15;
+    player.onGround = false;
+  }
+
+  player.yVel += gravity;
+  player.x += player.xVel;
+  player.y += player.yVel;
+
+  player.onGround = false;
+  platforms.forEach(p => {
+    if (player.x < p.x + p.width &&
+        player.x + player.width > p.x &&
+        player.y < p.y + p.height &&
+        player.y + player.height > p.y) {
+      if (player.y + player.height - player.yVel <= p.y) {
+        player.y = p.y - player.height;
+        player.yVel = 0;
+        player.onGround = true;
+      }
+    }
+  });
+
+  if (player.y > canvas.height) reset();
+}
+
+function reset() {
+  player.x = 50;
+  player.y = 0;
+  player.xVel = 0;
+  player.yVel = 0;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  ctx.fillStyle = 'green';
+  platforms.forEach(p => {
+    ctx.fillRect(p.x, p.y, p.width, p.height);
+  });
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
